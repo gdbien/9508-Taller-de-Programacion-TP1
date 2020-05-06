@@ -73,7 +73,6 @@ void _server_print_message(int32_t message_id, char *param_print[4], char *args_
 int server_communicate(server_t *self) {
 	int count;
 	size_t last_padding = 0;
-	//char *words[];
 	int n_multiple_8;
 	size_t n_arg = 0;
 	char *arg_names[n_arg];
@@ -84,7 +83,7 @@ int server_communicate(server_t *self) {
 	do {
 		count = _server_receive(self, (char*) &header_pre, sizeof(header_pre_t));
 		if (count < 0) return ERROR;
-		//if (count == 0) break;
+		if (count == 0) break;
 		arr_size = ntohl(header_pre.arr_size);
 
 		n_multiple_8 = next_multiple_8(arr_size);
@@ -95,11 +94,9 @@ int server_communicate(server_t *self) {
 		buffer = malloc(arr_size * sizeof(char));
 		count = _server_receive(self, buffer, arr_size);
 		if (count < 0) return ERROR;
-		//if (count == 0) break;
+		if (count == 0) break;
 		protocol_decode_parameters(buffer, arr_size, param_names, &n_arg);
 
-		
-		printf("N ARG: %ld\n",n_arg);
 
 		//Tengo que consumir el padding
 		buffer = realloc(buffer, last_padding * sizeof(char)); //MEDIO FEO, SI FALLA REALLOC PIERDO LA MEMORIA DE BUFFER, CAMBIAR DESPUES
@@ -112,8 +109,8 @@ int server_communicate(server_t *self) {
 			buffer = realloc(buffer, body_size * sizeof(char));
 			count = _server_receive(self, buffer, body_size);
 			if (count < 0) return ERROR;
-			//if (count == 0) break;
-			protocol_decode_arguments(buffer, body_size, arg_names, n_arg);
+			if (count == 0) break;
+			protocol_decode_arguments(buffer, arg_names, n_arg);
 		}
 		
 		_server_print_message(header_pre.message_id, param_names, arg_names, n_arg);
@@ -132,6 +129,7 @@ int server_communicate(server_t *self) {
 		count = _server_send(self, "OK\n" , 3);
 		if (count < 0) return ERROR;	
 	} while (count > 0);
+
 	return SUCCESS;
 }
 

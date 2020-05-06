@@ -66,7 +66,7 @@ static int _communicate_callback(char* buffer, size_t length, void *context) {
 	size_t encoded_size;
 	int count = protocol_encode(&encoded_data, buffer, &encoded_size);
 	if (count < 0) {
-		free((char*)buffer);
+		//free((char*)buffer);
 		free(encoded_data);
 		return ERROR;
 	} 
