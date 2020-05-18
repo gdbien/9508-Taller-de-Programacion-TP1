@@ -15,7 +15,8 @@ typedef struct stdin_streamer {
 
 int stdin_streamer_create(stdin_streamer_t *self, callback_t callback);
 /*
-	Inicializa stdin_streamer_t con filename, si es NULL deja por default stdin.
+	Inicializa stdin_streamer_t con filename, si es NULL deja por
+	default stdin.
 	Devuelve SUCCESS si ok, ERROR en caso contrario.
 */
 int stdin_streamer_init(stdin_streamer_t *self, const char *file_name);

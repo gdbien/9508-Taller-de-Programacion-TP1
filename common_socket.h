@@ -57,9 +57,3 @@ int socket_receive(socket_t *self, char *buffer, size_t length);
 int socket_shutdown(socket_t *self, int channel);
 
 #endif // SOCKET_H
-
-
-
-
-
-

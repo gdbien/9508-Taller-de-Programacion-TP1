@@ -3,9 +3,12 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include "common_message.h"
 
 #define SUCCESS 0
 #define ERROR -1
+
+typedef int(*prot_cb_t)(void *context, char *buffer, size_t length);
 
 typedef struct header_pre {
 	int8_t endianess;
@@ -15,44 +18,39 @@ typedef struct header_pre {
 	int32_t body_size;
 	int32_t message_id;
 	int32_t arr_size;
-} __attribute__ ((packed)) header_pre_t;
+} __attribute__((packed)) header_pre_t;
 
 typedef struct base_param {
 	int8_t par_type;
 	int8_t byte_1;
 	int8_t data_type;
 	int8_t null_byte;
-} __attribute__ ((packed)) base_param_t;
+} __attribute__((packed)) base_param_t;
 
 typedef struct norm_param {
 	base_param_t base_param;
 	int32_t data_size;
-} __attribute__ ((packed)) norm_param_t;
+} __attribute__((packed)) norm_param_t;
 
 typedef struct sign_param {
 	base_param_t base_param;
 	int8_t arg_count;
-} __attribute__ ((packed)) sign_param_t;
+} __attribute__((packed)) sign_param_t;
 
 /*
-	Recibe un buffer para que se le aplique el protocolo,
-	y devuelva el llamado encodeado en data (reservando memoria dinámica
-	para él).
-	Debe ser llamado inicialmente con *data = NULL, y el usuario debe
-	encargarse de liberar la memoria solo en el último llamado, o en caso
-	de error.
-	Devuelve la cantidad de bytes que ocupa el mensaje encodeado,
-	ERROR en caso de error.
+	Delega la codificacion de message, y una vez hecho, lo envia a través
+	de cb_send, utilizando context como parámetro.
+	Devuelve la cantidad de bytes del mensaje encodeado, o ERROR en caso
+	contrario
 */
-int protocol_encode(char **data, const char *buffer, size_t *encoded_size);
-
-//Documentar
-int protocol_decode_arguments(const char* encoded_body, char *arg_names[], size_t n_arg); //HAY QUE CAMBIAR LA API ?
-//Documentar
-int protocol_decode_parameters(const char *encoded_arr, size_t length, char *param_names[4], size_t* n_arg);//HAY QUE CAMBIAR LA API ?
-
-int next_multiple_8(size_t number); //ESTO TENGO QUE SACARLO DE ACA Y PONERLO EN ALGO TIPO utils.h
-									//igual que otras funciones tipo strdup etc
-
+int protocol_send(prot_cb_t cb_send, message_t *message, void *context);
+/*
+	Se encarga de recibir el buffer encodeado a través de cb_receive,
+	utilizando context como parámetro. Delega la decodificación de este,
+	e inicializa (con memoria dinámica) el message pasado por referencia.
+	El usuario debe encargarse de liberar la memoria de este.
+	Devuelve SUCCES si ok, o ERROR en caso contrario.
+*/
+int protocol_receive(prot_cb_t cb_receive, message_t *message, void *context);
 
 #endif // PROTOCOL_H

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "common_mem_utils.h"
 
 #define BUFFER_SIZE 32
 
@@ -15,26 +16,6 @@ static void _shift_left_buffer(char* buf, size_t buf_size, size_t amount) {
 	memset(buf + buf_size - amount, '\0', amount);
 }
 
-/*
-	Concatena str_2 al final de str_1, mismo uso que strcat(),
-	pero utiliza memoria dinámica para el string resultante.
-	Devuelve el string resultante, o NULL en caso de error.
-*/
-static char* _dynamic_concat(char *str_1, char *str_2) {
-	int length = 0;
-	char *result;
-
-	if (str_1) length = strlen(str_1);  	
-	length += strlen(str_2) + 1;
-	result = realloc(str_1, length);
-	if (!result) {
-		free(str_1);
-		return NULL;
-	}
-	if (!str_1) *result = '\0'; 
-	strcat(result, str_2);
-	return result;
-}
 
 int getline(char **line, FILE *input) {
 	static char buffer[BUFFER_SIZE];
@@ -53,9 +34,9 @@ int getline(char **line, FILE *input) {
 			*ptr = '\0';
 			found_line = true;	
 		}
-		*line = _dynamic_concat(*line, buffer);
+		*line = dynamic_concat(*line, buffer);
 		if (!*line) return ERROR;
-		_shift_left_buffer(buffer,BUFFER_SIZE,strlen(buffer)+1);
+		_shift_left_buffer(buffer,BUFFER_SIZE, strlen(buffer)+1);
 	}
 	return strlen(*line); 	 
 }

@@ -10,6 +10,7 @@
 	input debe estar abierto y debe manejarlo el usuario.
 	*Line tiene que ser NULL en el primer llamado.
 	El llamador debe liberar *line en el último llamado.
+	Trata de emular el getline() de stdio.h
 	Devuelve el tamaño de la línea, o ERROR en caso contrario.
 */
 int getline(char **line, FILE *input);

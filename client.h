@@ -25,7 +25,16 @@ int client_destroy(client_t *self);
 	Devuelve SUCCESS si ok, ERROR en caso contrario.
 */
 int client_connect(client_t *self, const char *host_name, const char *service);
-
+/*
+	Intenta enviar length bytes.
+	Devuelve cantidad de bytes enviados, ERROR en caso contrario.
+*/
+int client_send(client_t *self, const char *buffer, size_t length);
+/*
+	Intenta recibir length bytes.
+	Devuelve cantidad de bytes recibidos, ERROR en caso contrario.
+*/
+int client_receive(client_t *self, char *buffer, size_t length);
 /*
 	Se encarga de encapsular y delegar el manejo de la entrada,
 	procesando todas las llamadas.
@@ -37,6 +46,5 @@ int client_run(client_t *self, const char *file_name);
 	Devuelve SUCCESS si ok, ERROR en caso contrario.
 */
 int client_shutdown(client_t *self);
-
 
 #endif // CLIENT_H

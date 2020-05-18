@@ -24,21 +24,14 @@ int client_shutdown(client_t *self) {
 	if (ret < 0) return ERROR;
 	return SUCCESS;
 }
-/*
-	Intenta enviar length bytes.
-	Devuelve cantidad de bytes enviados, ERROR en caso contrario.
-*/
-static int _client_send(client_t *self, const char *buffer, size_t length) {
+
+int client_send(client_t *self, const char *buffer, size_t length) {
 	int ret = socket_send(&self->socket, buffer, length);
 	if (ret < 0) return ERROR;
 	return ret;
 }
 
-/*
-	Intenta recibir length bytes.
-	Devuelve cantidad de bytes recibidos, ERROR en caso contrario.
-*/
-static int _client_receive(client_t *self, char *buffer, size_t length) {
+int client_receive(client_t *self, char *buffer, size_t length) {
 	int ret = socket_receive(&self->socket, buffer, length);
 	if (ret < 0) return ERROR;
 	return ret;
@@ -52,6 +45,15 @@ static void _client_print_ok(int32_t message_id, char *respuesta) {
 	printf("0x%08x: %s", message_id, respuesta);
 }
 
+/*
+	Wrapper que se utiliza para poder pasarle la funcion client_send,
+	al protocolo, y que este no tenga que depender de client.h
+	Devuelve lo mismo que client_send().
+
+*/
+static int _client_send_wrapper(void* self, char *buffer, size_t length) {
+	return client_send((client_t*) self, buffer, length);
+}
 
 /*
 	Se encarga de despachar al cliente la linea (sin \n y terminada en \0)
@@ -60,23 +62,19 @@ static void _client_print_ok(int32_t message_id, char *respuesta) {
 */
 static int _communicate_callback(char* buffer, size_t length, void *context) {
 	client_t *client = context;
-	static int32_t message_id = 1;
+	message_t message;
+	message_create(&message);
+	message_init(&message, buffer);
 	char respuesta[4] = {'\0'};
-	char *encoded_data = NULL;
-	size_t encoded_size;
-	int count = protocol_encode(&encoded_data, buffer, &encoded_size);
-	if (count < 0) {
-		//free((char*)buffer);
-		free(encoded_data);
+	int ret = protocol_send(_client_send_wrapper, &message, client);
+	if (ret < 0) {
+		message_destroy(&message);
 		return ERROR;
-	} 
-	count = _client_send(client, encoded_data, encoded_size);
-	free(encoded_data); //Se encarga el cliente 
+	}
+	message_destroy(&message);
+	int count = client_receive(client, respuesta, 3);
 	if (count < 0) return ERROR;
-	count = _client_receive(client, respuesta, 3);
-	if (count < 0) return ERROR;
-	_client_print_ok(message_id, respuesta);
-	message_id++;
+	_client_print_ok(message_get_id(&message), respuesta);
 	return SUCCESS;
 }
 
@@ -90,4 +88,3 @@ int client_run(client_t *self, const char *file_name) {
 	if (ret < 0) return ERROR;
 	return SUCCESS;
 }
-
