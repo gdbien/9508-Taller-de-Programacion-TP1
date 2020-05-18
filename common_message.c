@@ -141,7 +141,7 @@ void message_print(message_t *self) {
 	if (n_args > 0) {
 		printf("* Parametros:\n");
 		for (size_t i = 0; i < n_args; i++) {
-			printf("	 * %s\n", self->arguments[i]);
+			printf("    * %s\n", self->arguments[i]);
 		}
 	}
 	printf("\n");
